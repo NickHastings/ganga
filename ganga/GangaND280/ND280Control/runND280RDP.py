@@ -75,12 +75,21 @@ class runND280RDP(IPrepareApp):
                 comparable=1,
                 doc='Location of shared resources. Presence of this attribute implies the application has been prepared.',
             ),
+            'container': SimpleItem(
+                defvalue=None, doc='Path to container', typelist=['type(None)', 'str']
+            ),
+            'binds': SimpleItem(
+                defvalue=[],
+                doc='Container paths to bind',
+                typelist=['str'],
+                sequence=1,
+                strict_sequence=0,
+            ),
         },
     )
     _category = 'applications'
     _name = 'runND280RDP'
     _exportmethods = ['prepare']
-
     def __init__(self):
         super(runND280RDP, self).__init__()
 
@@ -142,7 +151,15 @@ class runND280RDP(IPrepareApp):
 
         argsStr = ' '.join(args)
         # Create the bash script and put it in input dir.
+        self._scriptname = job.inputdir + 'runND280.sh'
         script = '#!/bin/bash\n'
+        if self.container:
+            bs = ' '.join([f'--bind {b}' for b in self.binds])
+            script += 'AM_IN_CONTAINER="$1"\n'
+            script += 'if [ "$AM_IN_CONTAINER" = "" ]; then\n'
+            script += f'    exec apptainer exec {bs} {self.container} {self._scriptname} "1"\n'
+            script += 'fi\n'
+
         for f in self.cmtsetup:
             script += 'source ' + f + '\n'
         script += 'cd ' + job.outputdir + '\n'
@@ -150,8 +167,6 @@ class runND280RDP(IPrepareApp):
         job.getInputWorkspace().writefile(
             FileBuffer('runND280.sh', script), executable=1
         )
-
-        self._scriptname = job.inputdir + 'runND280.sh'
 
         # Possibly gives job a name after run/subrun numbers
         if job.inputdata:
