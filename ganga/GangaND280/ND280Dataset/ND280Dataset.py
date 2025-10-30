@@ -29,9 +29,17 @@ class ND280Dataset(Dataset):
         dataset.names = ['/path/to/the/files/Input1.root','/path/to/the/files/Input2.root']
     """
 
-    _schema = Schema(Version(1, 0), {
-        'names': SimpleItem(defvalue=[], typelist=['str'], sequence=1, doc='List of input files with full path'),
-    })
+    _schema = Schema(
+        Version(1, 0),
+        {
+            'names': SimpleItem(
+                defvalue=[],
+                typelist=['str'],
+                sequence=1,
+                doc='List of input files with full path',
+            ),
+        },
+    )
 
     _category = 'datasets'
     _name = 'ND280Dataset'
@@ -56,7 +64,9 @@ class ND280Dataset(Dataset):
             if os.path.isdir(ln.strip()):
                 self.get_dataset(ln.strip())
             else:
-                self.get_dataset(os.path.dirname(ln.strip()), os.path.basename(ln.strip()))
+                self.get_dataset(
+                    os.path.dirname(ln.strip()), os.path.basename(ln.strip())
+                )
 
     def set_dataset_into_list(self, list_file):
         """Write the dataset files as a list in a text file."""
@@ -81,18 +91,19 @@ class ND280Dataset(Dataset):
 
     def get_dataset(self, directory, filter=None):
         """Get the list of files in the dataset's directory.
-        This is not implemented in ND280Dataset but is defined in each class inheriting from ND280Dataset."""
+        This is not implemented in ND280Dataset but is defined in each class inheriting from ND280Dataset.
+        """
 
         raise NotImplementedError
 
     def get_dataset_filenames(self):
-        """Simply returns a python list containing all the filenames in this ND280Dataset.
-        """
+        """Simply returns a python list containing all the filenames in this ND280Dataset."""
         return self.names
 
     def set_dataset_filenames(self, list_file):
         """Copy the list of files given in input as the list of files in the ND280Dataset.
-        NOTE: This will not append the input list to the existing file list but instead replace it."""
+        NOTE: This will not append the input list to the existing file list but instead replace it.
+        """
 
         logger.info('Writing list file %s ...', list_file)
 
@@ -111,6 +122,7 @@ class ND280Dataset(Dataset):
             return []
 
         import re
+
         classnamematch = re.match(r"ND280.*Dataset", job.inputdata._name)
         if not classnamematch:
             logger.warning('Dataset is not a class inheriting from ND280Dataset.')
@@ -122,18 +134,32 @@ class ND280Dataset(Dataset):
 
 
 class ND280LocalDataset(ND280Dataset):
-
     """ND280LocalDataset manages files located in a local directory."""
 
-    _schema = Schema(Version(1, 1), {
-        'names': SimpleItem(defvalue=[], typelist=['str'], sequence=1, doc='List of input files with full path'),
-    })
+    _schema = Schema(
+        Version(1, 1),
+        {
+            'names': SimpleItem(
+                defvalue=[],
+                typelist=['str'],
+                sequence=1,
+                doc='List of input files with full path',
+            ),
+        },
+    )
 
     _category = 'datasets'
     _name = 'ND280LocalDataset'
 
-    _exportmethods = ['get_dataset', 'get_dataset_filenames', 'get_dataset_from_list',
-                      'get_raw_from_list', 'get_kin_range', 'set_dataset_into_list', 'set_dataset_filenames']
+    _exportmethods = [
+        'get_dataset',
+        'get_dataset_filenames',
+        'get_dataset_from_list',
+        'get_raw_from_list',
+        'get_kin_range',
+        'set_dataset_into_list',
+        'set_dataset_filenames',
+    ]
 
     def __init__(self):
         super(ND280LocalDataset, self).__init__()
@@ -150,9 +176,14 @@ class ND280LocalDataset(ND280Dataset):
 
         directory = os.path.abspath(directory)
         if filter:
-            new_names = [os.path.join(directory, name) for name in fnmatch.filter(sorted(os.listdir(directory)), filter)]
+            new_names = [
+                os.path.join(directory, name)
+                for name in fnmatch.filter(sorted(os.listdir(directory)), filter)
+            ]
         else:
-            new_names = [os.path.join(directory, name) for name in sorted(os.listdir(directory))]
+            new_names = [
+                os.path.join(directory, name) for name in sorted(os.listdir(directory))
+            ]
 
         self.names.extend(new_names)
 
@@ -184,28 +215,44 @@ class ND280LocalDataset(ND280Dataset):
     def get_kin_range(self, fr, to):
         """Get the dataset of kin file numbers"""
 
-        logger.info('Producing a list of kin file numbers in the range from %s to %s.', fr, to)
+        logger.info(
+            'Producing a list of kin file numbers in the range from %s to %s.', fr, to
+        )
 
         self.names.extend([j for j in range(fr, to + 1)])
 
 
 class ND280DCacheDataset(ND280Dataset):
-
     """ND280 local datasets manages files located in a directory on a DCache server.
     By default, the configured server is TRIUMF.
     And currently the only configured server is TRIUMF but later you will be able to use another server:
       dataset.server = 'TRIUMF'
     """
 
-    _schema = Schema(Version(1, 0), {
-        'names': SimpleItem(defvalue=[], typelist=['str'], sequence=1, doc='List of input files with full path to get the file on the server, i.e. "dcap://the/path/thefile'),
-        'server': SimpleItem(defvalue="TRIUMF", doc='Name of the dcache server used'),
-    })
+    _schema = Schema(
+        Version(1, 0),
+        {
+            'names': SimpleItem(
+                defvalue=[],
+                typelist=['str'],
+                sequence=1,
+                doc='List of input files with full path to get the file on the server, i.e. "dcap://the/path/thefile',
+            ),
+            'server': SimpleItem(
+                defvalue="TRIUMF", doc='Name of the dcache server used'
+            ),
+        },
+    )
 
     _name = 'ND280DCacheDataset'
 
-    _exportmethods = ['get_dataset', 'get_dataset_filenames',
-                      'get_dataset_from_list', 'set_dataset_into_list', 'set_dataset_filenames']
+    _exportmethods = [
+        'get_dataset',
+        'get_dataset_filenames',
+        'get_dataset_from_list',
+        'set_dataset_into_list',
+        'set_dataset_filenames',
+    ]
 
     _commandstr = getConfig('ND280')['ND280DCacheDatasetCommandStr']
     _filebasepath = getConfig('ND280')['ND280DCacheDatasetFileBasePath']
@@ -234,7 +281,10 @@ class ND280DCacheDataset(ND280Dataset):
 
         fullpath = os.path.join(self._filebasepath[self.server], directory)
         if filter:
-            new_names = [os.path.join(fullpath, name) for name in fnmatch.filter(allfiles, filter)]
+            new_names = [
+                os.path.join(fullpath, name)
+                for name in fnmatch.filter(allfiles, filter)
+            ]
         else:
             new_names = [os.path.join(fullpath, name) for name in allfiles]
 
