@@ -212,6 +212,41 @@ class ND280LocalDataset(ND280Dataset):
             file = exp_name + '_' + run + '_' + sub + '.daq.mid.gz'
             self.get_dataset(os.path.join(prfx, rang), file)
 
+    def get_processed_from_list(self, prfx, list_file, file_type: str, trig_type: str):
+        """Get the dataset of 'file_type' (one of cali, reco, anal, etc)
+        from a location analgous to how the files are nomarlly stored on the grid
+        """
+        if not os.path.isdir(prfx):
+            logger.error('Directory $s does not exist', prfx)
+            return
+
+        if not os.path.exists(list_file):
+            logger.error('File %s does not exist', list_file)
+            return
+
+        with open(list_file) as f:
+            for ln in f.readlines():
+                chunks = ln.split()
+                run = int(chunks[0])
+                sub = int(chunks[1])
+                runk = run - run % 1000
+                path_glob = os.path.join(
+                    prfx,
+                    f'{runk:08d}_{runk + 999:08d}',
+                    file_type,
+                    f'oa_nd_{trig_type}_{run:08d}-{sub:04d}_????????????_{file_type}_*.root',
+                )
+                files = os.path.glob(path_glob)
+                if len(files) > 1:
+                    raise ValueError(
+                        f'Expected exactly one file from {path_glob}, but found {len(files)}'
+                    )
+
+                elif len(files) == 0:
+                    logger.warning(f'No file found for subrun {ln} at glob {path_glob}')
+
+                self.names.append(files[0])
+
     def get_kin_range(self, fr, to):
         """Get the dataset of kin file numbers"""
 
