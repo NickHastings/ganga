@@ -138,10 +138,11 @@ class ND280SplitNbJobs(ISplitter):
             if not isPerfectSplit:
                 subsets.append(filenames[High:])
 
+        masterType = type(job.inputdata)
         for sub in subsets:
 
             j = addProxy(self.createSubjob(job))
-
+            j.inputdata = masterType()
             j.inputdata.set_dataset_filenames(sub)
 
             subjobs.append(stripProxy(j))
@@ -150,7 +151,6 @@ class ND280SplitNbJobs(ISplitter):
 
 
 class ND280SplitNbInputFiles(ISplitter):
-
     """
     Split job into a number of subjobs such that each
     have the same given number of input files or less.
@@ -184,11 +184,11 @@ class ND280SplitNbInputFiles(ISplitter):
         subsets = splitNbInputFile(filenames, self.nbfiles)
 
         logger.info('Creating %d subjobs ...', len(subjobs))
-
+        masterType = type(job.inputdata)
         for sub in subsets:
 
             j = addProxy(self.createSubjob(job))
-
+            j.inputdata = masterType()
             j.inputdata.set_dataset_filenames(sub)
 
             subjobs.append(stripProxy(j))
