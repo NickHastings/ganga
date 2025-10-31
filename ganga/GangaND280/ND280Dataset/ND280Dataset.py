@@ -16,6 +16,7 @@ from GangaCore.Utility.logging import getLogger
 import os
 import fnmatch
 import subprocess
+import glob
 
 logger = getLogger()
 
@@ -237,7 +238,7 @@ class ND280LocalDataset(ND280Dataset):
                     file_type,
                     f'oa_nd_{trig_type}_{run:08d}-{sub:04d}_????????????_{file_type}_*.root',
                 )
-                files = os.path.glob(path_glob)
+                files = glob.glob(path_glob)
                 if len(files) > 1:
                     raise ValueError(
                         f'Expected exactly one file from {path_glob}, but found {len(files)}'
