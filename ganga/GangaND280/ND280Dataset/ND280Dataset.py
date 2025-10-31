@@ -156,6 +156,7 @@ class ND280LocalDataset(ND280Dataset):
         'get_dataset_filenames',
         'get_dataset_from_list',
         'get_raw_from_list',
+        'get_processed_from_list',
         'get_kin_range',
         'set_dataset_into_list',
         'set_dataset_filenames',
